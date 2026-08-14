@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse and filter property listings with Havenly.">
+  <title>Listings | Havenly</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Havenly home"><span class="brand-mark">H</span><span>Havenly</span></a>
+      <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="primary-nav"><span></span><span></span><span></span></button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary navigation">
+        <a href="index.html">Home</a><a class="active" href="listings.html">Listings</a><a href="property-single.html">Property Detail</a><a class="nav-cta" href="listings.html">Browse Properties <span aria-hidden="true">→</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container page-hero-inner">
+        <div><span class="eyebrow">Property directory</span><h1>Find your next address.</h1><p>Filter the collection by location, property type, price, and room count.</p></div>
+        <div class="page-hero-art" aria-hidden="true"><span>2,400+</span><small>properties</small></div>
+      </div>
+    </section>
+
+    <section class="section listings-section">
+      <div class="container">
+        <div class="listings-toolbar">
+          <div><span class="eyebrow">Available now</span><h2><span id="result-count">6</span> properties found</h2></div>
+          <label class="sort-control">Sort by <select id="sort-select"><option value="featured">Featured</option><option value="price-low">Price: Low to high</option><option value="price-high">Price: High to low</option><option value="size-high">Largest first</option></select></label>
+        </div>
+
+        <div class="listings-layout">
+          <!-- ================================================
+               Filter Sidebar
+               Values are read by js/main.js and compared with
+               data-* attributes on each listing card.
+               ================================================ -->
+          <aside class="filter-panel" aria-label="Property filters">
+            <div class="filter-header"><div><span class="eyebrow">Refine</span><h2>Search filters</h2></div><button class="filter-close" type="button" aria-label="Close filters">×</button></div>
+
+            <form id="filters-form">
+              <div class="filter-group"><label for="filter-city">City</label><select id="filter-city" name="city"><option value="">All cities</option><option value="Austin">Austin</option><option value="Denver">Denver</option><option value="Chicago">Chicago</option><option value="Miami">Miami</option><option value="Seattle">Seattle</option></select></div>
+
+              <fieldset class="filter-group"><legend>Property type</legend><label class="check-row"><input type="radio" name="type" value=""><span>Any type</span></label><label class="check-row"><input type="radio" name="type" value="Apartment"><span>Apartment</span></label><label class="check-row"><input type="radio" name="type" value="House"><span>House</span></label><label class="check-row"><input type="radio" name="type" value="Villa"><span>Villa</span></label><label class="check-row"><input type="radio" name="type" value="Condo"><span>Condo</span></label></fieldset>
+
+              <div class="filter-group"><label for="min-price">Minimum price</label><div class="input-prefix"><span>$</span><input id="min-price" type="number" min="0" step="10000" placeholder="0"></div></div>
+              <div class="filter-group"><label for="max-price">Maximum price</label><div class="input-prefix"><span>$</span><input id="max-price" type="number" min="0" step="10000" placeholder="No max"></div></div>
+
+              <fieldset class="filter-group"><legend>Bedrooms</legend><div class="room-options"><label><input type="radio" name="rooms" value=""><span>Any</span></label><label><input type="radio" name="rooms" value="2"><span>2+</span></label><label><input type="radio" name="rooms" value="3"><span>3+</span></label><label><input type="radio" name="rooms" value="4"><span>4+</span></label></div></fieldset>
+
+              <button class="button button-primary button-full" type="submit">Apply filters</button>
+              <button class="button button-ghost button-full" type="button" id="reset-filters">Reset filters</button>
+            </form>
+          </aside>
+
+          <div class="listings-content">
+            <button class="mobile-filter-button button button-dark" type="button" id="open-filters">☰ Filters</button>
+            <div class="property-grid property-grid-list" id="listing-grid" aria-live="polite">
+              <!-- Listing cards are intentionally static mock data. JavaScript reads their data-* values. -->
+              <article class="property-card listing-card" data-city="Austin" data-type="House" data-price="485000" data-rooms="3" data-size="2140">
+                <div class="property-image"><a class="property-image-link" href="property-single.html"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85" alt="Palm Residence exterior" loading="lazy"><span class="property-status">For Sale</span></a><button class="save-button" type="button" data-save aria-label="Save Palm Residence" aria-pressed="false">♡</button></div>
+                <div class="property-body"><div class="property-price">$485,000</div><h3><a href="property-single.html">Palm Residence</a></h3><p class="property-location">Austin, Texas · Westlake</p><div class="property-meta"><span>3 Beds</span><span>2 Baths</span><span>2,140 sq ft</span></div></div>
+              </article>
+
+              <article class="property-card listing-card" data-city="Denver" data-type="House" data-price="735000" data-rooms="4" data-size="2860">
+                <div class="property-image"><a class="property-image-link" href="property-single.html"><img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85" alt="Cedar House interior" loading="lazy"><span class="property-status">For Sale</span></a><button class="save-button" type="button" data-save aria-label="Save Cedar House" aria-pressed="false">♡</button></div>
+                <div class="property-body"><div class="property-price">$735,000</div><h3><a href="property-single.html">Cedar House</a></h3><p class="property-location">Denver, Colorado · Hilltop</p><div class="property-meta"><span>4 Beds</span><span>3 Baths</span><span>2,860 sq ft</span></div></div>
+              </article>
+
+              <article class="property-card listing-card" data-city="Chicago" data-type="Apartment" data-price="3200" data-rooms="2" data-size="1420" data-rent="true">
+                <div class="property-image"><a class="property-image-link" href="property-single.html"><img src="https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=85" alt="The Loft apartment interior" loading="lazy"><span class="property-status">For Rent</span></a><button class="save-button" type="button" data-save aria-label="Save The Loft" aria-pressed="false">♡</button></div>
+                <div class="property-body"><div class="property-price">$3,200 <small>/ month</small></div><h3><a href="property-single.html">The Loft</a></h3><p class="property-location">Chicago, Illinois · River North</p><div class="property-meta"><span>2 Beds</span><span>2 Baths</span><span>1,420 sq ft</span></div></div>
+              </article>
+
+              <article class="property-card listing-card" data-city="Miami" data-type="Villa" data-price="1190000" data-rooms="4" data-size="3280">
+                <div class="property-image"><a class="property-image-link" href="property-single.html"><img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=85" alt="Ocean Villa living area" loading="lazy"><span class="property-status">For Sale</span></a><button class="save-button" type="button" data-save aria-label="Save Ocean Villa" aria-pressed="false">♡</button></div>
+                <div class="property-body"><div class="property-price">$1,190,000</div><h3><a href="property-single.html">Ocean Villa</a></h3><p class="property-location">Miami, Florida · Coral Gables</p><div class="property-meta"><span>4 Beds</span><span>4 Baths</span><span>3,280 sq ft</span></div></div>
+              </article>
+
+              <article class="property-card listing-card" data-city="Seattle" data-type="Condo" data-price="615000" data-rooms="3" data-size="1760">
+                <div class="property-image"><a class="property-image-link" href="property-single.html"><img src="https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=85" alt="Northline condo" loading="lazy"><span class="property-status">For Sale</span></a><button class="save-button" type="button" data-save aria-label="Save Northline Condo" aria-pressed="false">♡</button></div>
+                <div class="property-body"><div class="property-price">$615,000</div><h3><a href="property-single.html">Northline Condo</a></h3><p class="property-location">Seattle, Washington · Queen Anne</p><div class="property-meta"><span>3 Beds</span><span>2 Baths</span><span>1,760 sq ft</span></div></div>
+              </article>
+
+              <article class="property-card listing-card" data-city="Austin" data-type="Apartment" data-price="285000" data-rooms="2" data-size="1100">
+                <div class="property-image"><a class="property-image-link" href="property-single.html"><img src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=85" alt="The Grove apartment" loading="lazy"><span class="property-status">For Sale</span></a><button class="save-button" type="button" data-save aria-label="Save The Grove" aria-pressed="false">♡</button></div>
+                <div class="property-body"><div class="property-price">$285,000</div><h3><a href="property-single.html">The Grove</a></h3><p class="property-location">Austin, Texas · East Austin</p><div class="property-meta"><span>2 Beds</span><span>1 Bath</span><span>1,100 sq ft</span></div></div>
+              </article>
+            </div>
+
+            <div class="empty-state" id="empty-state" hidden><div class="empty-icon">⌕</div><h2>No properties found</h2><p>Try widening your price range or choosing a different location.</p><button class="button button-dark" type="button" id="empty-reset">Reset filters</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="container footer-grid"><div><a class="brand footer-brand" href="index.html"><span class="brand-mark">H</span><span>Havenly</span></a><p>A clean, modern starting point for real estate marketplaces and property directories.</p></div><div><h2>Explore</h2><a href="listings.html">All listings</a><a href="property-single.html">Featured property</a></div><div><h2>Company</h2><a href="#">About us</a><a href="#">Contact</a></div><div><h2>Template</h2><a href="README.md">Documentation</a><a href="#">Privacy</a></div></div><div class="container footer-bottom"><span>© 2026 Havenly Template</span><span>Built with HTML · CSS · Vanilla JS</span></div></footer>
+  <script src="js/main.js" defer></script>
+</body>
+</html>
