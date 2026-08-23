@@ -12,6 +12,11 @@
 
 "use strict";
 
+function getFocusableElements(container) {
+  return [...container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+    .filter((element) => !element.hidden && element.getAttribute("aria-hidden") !== "true");
+}
+
 /* ============================================================
    1. MOBILE NAVIGATION
    ============================================================ */
@@ -21,34 +26,39 @@ function initMobileNavigation() {
 
   if (!toggle || !nav) return;
 
+  function closeNavigation({ restoreFocus = true } = {}) {
+    nav.classList.remove("open");
+    toggle.classList.remove("active");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Open navigation");
+    if (restoreFocus) toggle.focus();
+  }
+
   toggle.addEventListener("click", () => {
     const isOpen = nav.classList.toggle("open");
     toggle.classList.toggle("active", isOpen);
     toggle.setAttribute("aria-expanded", String(isOpen));
     toggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+
+    if (isOpen) nav.querySelector("a")?.focus();
+    else toggle.focus();
   });
 
-  // Close the mobile menu after a visitor chooses a page.
   nav.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      nav.classList.remove("open");
-      toggle.classList.remove("active");
-      toggle.setAttribute("aria-expanded", "false");
-      toggle.setAttribute("aria-label", "Open navigation");
-    });
+    link.addEventListener("click", () => closeNavigation({ restoreFocus: false }));
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && nav.classList.contains("open")) closeNavigation();
   });
 }
 
 /* ============================================================
    2. SAVE/FAVOURITE BUTTONS
-   A small extra interaction that makes listing cards feel real.
-   Replace this with localStorage or an API when adding a backend.
    ============================================================ */
 function initSaveButtons() {
   document.querySelectorAll("[data-save]").forEach((button) => {
     button.addEventListener("click", (event) => {
-      // Prevent a nested button inside the property link from
-      // navigating to the detail page.
       event.preventDefault();
       event.stopPropagation();
 
@@ -61,9 +71,6 @@ function initSaveButtons() {
 
 /* ============================================================
    3. LISTING FILTERS + SORTING
-   Mock property data lives in HTML data-* attributes.
-   That means a buyer can replace the cards with real data later
-   without changing the core filtering algorithm.
    ============================================================ */
 function initListingFilters() {
   const form = document.querySelector("#filters-form");
@@ -77,7 +84,6 @@ function initListingFilters() {
 
   if (!form || !grid || cards.length === 0) return;
 
-  // Read a single filter value safely from the form.
   function getFilterValues() {
     const selectedType = form.querySelector('input[name="type"]:checked');
     const selectedRooms = form.querySelector('input[name="rooms"]:checked');
@@ -91,7 +97,6 @@ function initListingFilters() {
     };
   }
 
-  // Decide whether a card satisfies every active filter.
   function cardMatchesFilters(card, filters) {
     const data = card.dataset;
     const price = Number(data.price || 0);
@@ -106,7 +111,6 @@ function initListingFilters() {
     return matchesCity && matchesType && matchesRooms && matchesMin && matchesMax;
   }
 
-  // Apply filters, then sort the visible cards.
   function renderListings() {
     const filters = getFilterValues();
     const matchingCards = cards.filter((card) => cardMatchesFilters(card, filters));
@@ -115,7 +119,6 @@ function initListingFilters() {
       card.hidden = !matchingCards.includes(card);
     });
 
-    // Sort only the matching cards so the hidden state remains intact.
     const sortMode = sortSelect?.value || "featured";
     const sorted = [...matchingCards].sort((a, b) => {
       if (sortMode === "price-low") return Number(a.dataset.price) - Number(b.dataset.price);
@@ -133,9 +136,7 @@ function initListingFilters() {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     renderListings();
-
-    // Close the mobile filter drawer after applying filters.
-    document.querySelector(".filter-panel")?.classList.remove("open");
+    closeFilterDrawer();
   });
 
   sortSelect?.addEventListener("change", renderListings);
@@ -148,7 +149,6 @@ function initListingFilters() {
   resetButton?.addEventListener("click", resetFilters);
   emptyResetButton?.addEventListener("click", resetFilters);
 
-  // Support search links such as listings.html?type=Apartment.
   const params = new URLSearchParams(window.location.search);
   const queryCity = params.get("city");
   const queryType = params.get("type");
@@ -169,6 +169,8 @@ function initListingFilters() {
 /* ============================================================
    4. MOBILE FILTER DRAWER
    ============================================================ */
+let closeFilterDrawer = () => {};
+
 function initFilterDrawer() {
   const openButton = document.querySelector("#open-filters");
   const closeButton = document.querySelector(".filter-close");
@@ -176,14 +178,54 @@ function initFilterDrawer() {
 
   if (!openButton || !panel) return;
 
-  openButton.addEventListener("click", () => panel.classList.add("open"));
-  closeButton?.addEventListener("click", () => panel.classList.remove("open"));
+  let lastFocusedElement = null;
+
+  function openDrawer() {
+    lastFocusedElement = document.activeElement;
+    panel.classList.add("open");
+    openButton.setAttribute("aria-expanded", "true");
+    closeButton?.focus();
+  }
+
+  closeFilterDrawer = function closeDrawer({ restoreFocus = true } = {}) {
+    panel.classList.remove("open");
+    openButton.setAttribute("aria-expanded", "false");
+    if (restoreFocus) (lastFocusedElement || openButton)?.focus();
+    lastFocusedElement = null;
+  };
+
+  openButton.addEventListener("click", openDrawer);
+  closeButton?.addEventListener("click", () => closeFilterDrawer());
+
+  panel.addEventListener("keydown", (event) => {
+    if (!panel.classList.contains("open")) return;
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeFilterDrawer();
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+
+    const focusable = getFocusableElements(panel);
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
 }
 
 /* ============================================================
    5. PROPERTY IMAGE GALLERY
-   Thumbnails contain their own image URL and alt text in data-*.
-   The controls cycle through the thumbnail array.
    ============================================================ */
 function initGallery() {
   const gallery = document.querySelector("[data-gallery]");
@@ -222,7 +264,6 @@ function initGallery() {
   previous?.addEventListener("click", () => showImage(currentIndex - 1));
   next?.addEventListener("click", () => showImage(currentIndex + 1));
 
-  // Keyboard support makes the gallery easier to use without a mouse.
   gallery.addEventListener("keydown", (event) => {
     if (event.key === "ArrowLeft") showImage(currentIndex - 1);
     if (event.key === "ArrowRight") showImage(currentIndex + 1);
@@ -233,8 +274,6 @@ function initGallery() {
 
 /* ============================================================
    6. CONTACT MODAL
-   This demo does not send data to a server. It displays a success
-   message so buyers can connect their own form endpoint later.
    ============================================================ */
 function initContactModal() {
   const modal = document.querySelector("#contact-modal");
@@ -263,8 +302,28 @@ function initContactModal() {
   openButtons.forEach((button) => button.addEventListener("click", openModal));
   closeButtons.forEach((button) => button.addEventListener("click", closeModal));
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !modal.hidden) closeModal();
+  modal.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeModal();
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+
+    const focusable = getFocusableElements(modal);
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   });
 
   form?.addEventListener("submit", (event) => {
